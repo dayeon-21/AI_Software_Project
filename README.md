@@ -1,14 +1,7 @@
-# LOCUS: Edge AI Driven Spatial Intelligence via Matter-based Federated Learning
+# LOCUS: AI-Driven Household Context-Awareness for Predictive Cleaning
 ---
 ## Proposal
-This project proposes LOCUS, a service that enables smart appliances to locate users' lost items through image learning. This is achieved by integrating a Matter-protocol-enabled Federated Learning (FL) system and Edge AI to advance the spatial awareness capabilities of the smart home.
-
-The system utilizes lightweight on-device AI models embedded in appliances like Robot Vacuum Cleaners (RVCs) to precisely recognize, learn, and determine the location of objects within the home. Each appliance learns and stores data within its view as lightweight feature vectors. When a user reports the features of a lost item, the appliances cooperatively check for the item's presence via Matter local communication, and the discovering appliance (or the closest one) guides the user with a smart auditory/visual notification.
-
-LOCUS utilizes Matter clusters to securely share model weights and metadata, achieving higher recognition accuracy than single devices. This strategy eliminates cloud round-trip latency and leverages local communication to ensure ultra-low-latency user experience (UX) and maintains data privacy and protection.
-
-The goals of this research are to achieve scalability in interoperation and learning with other manufacturers' appliances using Matter clusters, security through weight-based learning, and reduction of Cloud Operation Expenditure (OpEx) through the lightweight nature of Edge AI implementation.
-
+This project is an Option B prototype to evolve robot vacuums from reactive tools into predictive partners. Our system, LOCUS, operates entirely on-device to guarantee user privacy while learning unique behavioral patterns that predict messes. LOCUS fuses multimodal sensor data: SLAM creates semantic maps ("kitchen"), YOLO identifies visual activities ("person eating"), and SED captures audio context ("cooking sounds"). This time-series data is fed into a lightweight GRU model, which serves as the system's brain. It learns sequential user patterns, enabling it to predict outcomes like "a mess is likely" based on the context flow. The core innovation is implementing Personalized Federated Learning (PFL), specifically using a FedPer architecture. The GRU model is split: a Base (feature extraction) is trained collectively via federated updates, learning general intelligence. A Head (decision layer) is trained only locally on the device. This allows LOCUS to leverage shared knowledge while ensuring the final decision-making is hyper-personalized to the user's specific habits. The final prototype will proactively predict and suggest optimal cleaning times rather than just reacting to commands.
 ---
 ## Team Members
 
