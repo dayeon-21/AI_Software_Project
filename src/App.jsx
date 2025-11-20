@@ -1,3 +1,4 @@
+import io from 'socket.io-client';
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -48,57 +49,27 @@ function App() {
 
   // --- 시뮬레이션 데이터 생성 (서버 연결 전 테스트용) ---
   useEffect(() => {
-    const interval = setInterval(() => {
-      const time = Date.now() / 1000;
-      
-      // 1. Vision Data Mock
-      const visionConf = Math.random() > 0.3 ? 0.92 : 0.45;
-      
-      // 2. Audio Data Mock
-      const isVacuum = Math.sin(time) > 0;
-      const audioProbs = [
-        { name: 'Vacuum', prob: isVacuum ? 0.85 : 0.1 },
-        { name: 'Speech', prob: isVacuum ? 0.1 : 0.75 },
-        { name: 'Noise', prob: 0.05 },
-      ].sort((a, b) => b.prob - a.prob);
+    // 1. 백엔드 서버 연결
+    const socket = io("http://localhost:8000", { transports: ["websocket"] });
 
-      // 3. GRU Logic Mock
-      let gruProbs = [
-        { name: 'Cleaning', prob: 0.1 },
-        { name: 'Walking', prob: 0.2 },
-        { name: 'Idle', prob: 0.7 },
-      ];
+    // 2. 데이터 수신 대기
+    socket.on("locus_data", (packet) => {
+      // 받은 데이터로 화면 갱신
+      const { vision, audio, location, gru } = packet;
       
-      if (audioProbs[0].name === 'Vacuum' && audioProbs[0].prob > 0.7) {
-        gruProbs = [{ name: 'Cleaning', prob: 0.85 }, { name: 'Walking', prob: 0.1 }, { name: 'Idle', prob: 0.05 }];
-      }
-
-      const topAction = gruProbs.reduce((prev, current) => (prev.prob > current.prob) ? prev : current);
+      // GRU Locked 판별 로직
+      const topAction = gru.probs.reduce((p, c) => (p.prob > c.prob) ? p : c);
       const locked = topAction.prob >= 0.7;
+      
       setIsLocked(locked);
-
       setData({
-        vision: { 
-            label: 'Person', 
-            conf: visionConf,
-            matrix: [
-                { name: 'Laptop', prob: 0.85 },
-                { name: 'Keyboard', prob: 0.12 }
-            ] 
-        },
-        audio: { top3: audioProbs },
-        location: { 
-            livingProb: 50 + Math.sin(time)*40, 
-            kitchenProb: 50 - Math.sin(time)*40,
-            x: Math.sin(time) * 3 
-        },
-        gru: { action: topAction.name, probs: gruProbs }
+        vision, audio, location,
+        gru: { action: topAction.name, probs: gru.probs }
       });
+    });
 
-    }, 1000);
-    return () => clearInterval(interval);
+    return () => socket.disconnect();
   }, []);
-
 
   // --- 렌더링 ---
   return (
